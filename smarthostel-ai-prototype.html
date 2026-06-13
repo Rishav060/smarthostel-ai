@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartHostel AI — Operations & Safety Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10151f;
+    --slate:#1c2436;
+    --slate-soft:#2a3450;
+    --paper:#f5f6fa;
+    --line:#e1e4ee;
+    --teal:#1fb6a6;
+    --teal-deep:#0e8c7e;
+    --amber:#f0a23b;
+    --rose:#e2566b;
+    --indigo:#5b6cf0;
+    --muted:#6b7488;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Sora', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+  /* ---------- Login ---------- */
+  .login-wrap{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(circle at 20% 20%, #1c2436 0%, #10151f 60%);
+    padding:24px;
+  }
+  .login-card{
+    width:100%; max-width:920px; background:#ffffff; border-radius:20px;
+    display:grid; grid-template-columns:1.1fr 1fr; overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,0.35);
+  }
+  @media (max-width:760px){ .login-card{grid-template-columns:1fr;} .login-visual{display:none;} }
+  .login-visual{
+    background:linear-gradient(160deg,#1c2436 0%, #0e8c7e 130%);
+    padding:48px; color:#fff; display:flex; flex-direction:column; justify-content:space-between;
+    position:relative; overflow:hidden;
+  }
+  .login-visual::after{
+    content:""; position:absolute; right:-60px; bottom:-60px; width:240px; height:240px;
+    border:1px solid rgba(255,255,255,0.15); border-radius:50%;
+  }
+  .login-visual::before{
+    content:""; position:absolute; right:20px; bottom:20px; width:150px; height:150px;
+    border:1px solid rgba(255,255,255,0.12); border-radius:50%;
+  }
+  .brand-mark{
+    width:46px; height:46px; border-radius:12px; background:var(--amber);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; color:#1c2436;
+  }
+  .login-form{padding:48px;}
+  .role-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:22px;}
+  .role-btn{
+    border:1px solid var(--line); background:#fff; border-radius:12px; padding:14px;
+    text-align:left; cursor:pointer; transition:all .15s ease; font-family:inherit;
+  }
+  .role-btn:hover{border-color:var(--teal); background:#f0fbf9; transform:translateY(-1px);}
+  .role-btn .r-title{font-weight:700; font-size:14px;}
+  .role-btn .r-sub{font-size:11.5px; color:var(--muted); margin-top:2px;}
+
+  /* ---------- App shell ---------- */
+  .shell{display:flex; min-height:100vh;}
+  .sidebar{
+    width:230px; background:var(--ink); color:#fff; flex-shrink:0;
+    display:flex; flex-direction:column; padding:22px 16px; gap:4px;
+  }
+  .sidebar .brand{display:flex; align-items:center; gap:10px; padding:0 8px 22px;}
+  .sidebar .brand-mark{width:34px; height:34px; font-size:15px; border-radius:9px;}
+  .sidebar .brand-name{font-weight:800; font-size:15px; letter-spacing:.2px;}
+  .sidebar .brand-sub{font-size:10px; color:#8893ab; letter-spacing:1.5px; text-transform:uppercase;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px;
+    color:#aab2c8; font-size:13.5px; font-weight:500; cursor:pointer; transition:.15s;
+  }
+  .nav-item:hover{background:#1c2436; color:#fff;}
+  .nav-item.active{background:var(--teal); color:#0b1018; font-weight:700;}
+  .nav-icon{width:18px; text-align:center; font-size:14px;}
+  .sidebar-footer{margin-top:auto; padding:12px 8px; border-top:1px solid #2a3450;}
+  .user-pill{display:flex; align-items:center; gap:10px; font-size:12.5px; color:#cfd4e4;}
+  .avatar{width:32px; height:32px; border-radius:50%; background:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;}
+  .logout{font-size:11px; color:#8893ab; cursor:pointer; margin-top:8px; display:inline-block;}
+  .logout:hover{color:#fff;}
+
+  .main{flex:1; padding:28px 36px; max-width:1280px;}
+  .topbar{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; gap:16px; flex-wrap:wrap;}
+  .topbar h1{font-size:24px; font-weight:800;}
+  .topbar .eyebrow{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:4px;}
+  .sos-button{
+    background:var(--rose); color:#fff; border:none; padding:12px 22px; border-radius:12px;
+    font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 8px 20px rgba(226,86,107,0.35);
+    display:flex; align-items:center; gap:8px; font-family:inherit;
+  }
+  .sos-button:hover{background:#cc4658;}
+  .sos-button .pulse{width:9px; height:9px; border-radius:50%; background:#fff; animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{opacity:1; transform:scale(1);} 50%{opacity:.4; transform:scale(1.4);} 100%{opacity:1; transform:scale(1);}}
+
+  /* ---------- Cards / grids ---------- */
+  .grid{display:grid; gap:18px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:1.4fr 1fr;}
+  @media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:1fr 1fr;} .grid-2{grid-template-columns:1fr;}}
+  @media(max-width:640px){.grid-4{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;}}
+
+  .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px;}
+  .card h3{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:14px;}
+  .stat{font-size:30px; font-weight:800; line-height:1;}
+  .stat-label{font-size:12.5px; color:var(--muted); margin-top:6px;}
+  .stat-trend{font-size:11.5px; margin-top:8px; font-weight:700;}
+  .trend-up{color:var(--teal-deep);}
+  .trend-down{color:var(--rose);}
+
+  /* ---------- Heat map ---------- */
+  .heatmap-grid{display:grid; grid-template-columns:repeat(10, 1fr); gap:6px;}
+  .heat-cell{
+    aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; color:#fff; cursor:pointer; position:relative; mono;
+    font-family:'JetBrains Mono', monospace;
+    transition:transform .1s;
+  }
+  .heat-cell:hover{transform:scale(1.12); z-index:2;}
+  .heat-green{background:#1fb6a6;}
+  .heat-yellow{background:#f0a23b;}
+  .heat-red{background:#e2566b;}
+  .legend{display:flex; gap:18px; margin-top:14px; font-size:12px; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  /* ---------- Lists / tables ---------- */
+  .list-row{
+    display:flex; align-items:center; justify-content:space-between; padding:13px 0;
+    border-bottom:1px solid var(--line); gap:12px;
+  }
+  .list-row:last-child{border-bottom:none;}
+  .pill{font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; white-space:nowrap;}
+  .pill-high{background:#fde8eb; color:var(--rose);}
+  .pill-medium{background:#fef3e2; color:#b9772a;}
+  .pill-low{background:#e6f7f4; color:var(--teal-deep);}
+  .pill-open{background:#eef0fb; color:var(--indigo);}
+  .pill-progress{background:#fef3e2; color:#b9772a;}
+  .pill-resolved{background:#e6f7f4; color:var(--teal-deep);}
+  .pill-ack{background:#eef0fb; color:var(--indigo);}
+
+  .tag{font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:8px; background:#f1f2f7; color:#555f78; text-transform:uppercase; letter-spacing:.5px;}
+
+  /* ---------- Forms ---------- */
+  textarea, input, select{
+    width:100%; border:1px solid var(--line); border-radius:10px; padding:11px 13px;
+    font-family:inherit; font-size:13.5px; background:#fafbfd; resize:vertical;
+  }
+  textarea:focus, input:focus, select:focus{outline:2px solid var(--teal); outline-offset:1px; border-color:transparent;}
+  label{font-size:12px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px;}
+  .field{margin-bottom:14px;}
+  .btn{
+    border:none; border-radius:10px; padding:11px 20px; font-weight:700; font-size:13.5px;
+    cursor:pointer; font-family:inherit; transition:.15s;
+  }
+  .btn-primary{background:var(--ink); color:#fff;}
+  .btn-primary:hover{background:#000;}
+  .btn-ghost{background:#fff; border:1px solid var(--line); color:var(--ink);}
+  .btn-ghost:hover{background:#f5f6fa;}
+  .btn-teal{background:var(--teal); color:#0b1018;}
+  .btn-teal:hover{background:var(--teal-deep); color:#fff;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+
+  /* ---------- AI badge ---------- */
+  .ai-result{
+    border:1px dashed #cfd6ea; border-radius:12px; padding:14px; margin-top:14px;
+    background:linear-gradient(135deg, #f6f8ff 0%, #f0fbf9 100%);
+  }
+  .ai-result .ai-head{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; color:var(--indigo); margin-bottom:8px;}
+  .ai-dot{width:7px; height:7px; border-radius:50%; background:var(--indigo); animation:pulse 1.5s infinite;}
+  .ai-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+
+  /* ---------- Chat ---------- */
+  .chat-window{height:380px; overflow-y:auto; border:1px solid var(--line); border-radius:12px; padding:16px; background:#fafbfd; display:flex; flex-direction:column; gap:12px;}
+  .msg{max-width:75%; padding:10px 14px; border-radius:14px; font-size:13.5px; line-height:1.5;}
+  .msg-bot{background:#fff; border:1px solid var(--line); align-self:flex-start; border-bottom-left-radius:4px;}
+  .msg-user{background:var(--ink); color:#fff; align-self:flex-end; border-bottom-right-radius:4px;}
+  .chat-input-row{display:flex; gap:10px; margin-top:12px;}
+  .suggestion{font-size:11.5px; padding:6px 12px; border:1px solid var(--line); border-radius:20px; background:#fff; cursor:pointer; color:var(--muted);}
+  .suggestion:hover{border-color:var(--teal); color:var(--teal-deep);}
+
+  /* ---------- Modal ---------- */
+  .modal-bg{position:fixed; inset:0; background:rgba(16,21,31,0.55); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal{background:#fff; border-radius:18px; padding:28px; max-width:440px; width:100%; text-align:center;}
+  .modal .icon-ring{width:64px; height:64px; border-radius:50%; background:#fde8eb; color:var(--rose); display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px;}
+
+  /* ---------- Toast ---------- */
+  .toast-wrap{position:fixed; top:20px; right:20px; display:flex; flex-direction:column; gap:10px; z-index:60;}
+  .toast{background:var(--ink); color:#fff; padding:12px 18px; border-radius:10px; font-size:13px; box-shadow:0 10px 30px rgba(0,0,0,0.25); display:flex; align-items:center; gap:10px; min-width:220px; animation:slidein .25s ease;}
+  @keyframes slidein{from{transform:translateX(20px); opacity:0;} to{transform:translateX(0); opacity:1;}}
+  .toast .ttag{width:8px; height:8px; border-radius:50%; background:var(--rose); flex-shrink:0;}
+
+  .scroll-x{overflow-x:auto;}
+  .bar-row{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+  .bar-track{flex:1; height:8px; background:#eef0f5; border-radius:6px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:6px;}
+  .bar-label{font-size:12px; width:90px; color:var(--muted); font-weight:600;}
+  .bar-val{font-size:12px; font-weight:700; width:40px; text-align:right; mono; font-family:'JetBrains Mono',monospace;}
+
+  .qr-box{
+    width:160px; height:160px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:12px;
+    display:flex; align-items:center; justify-content:center; padding:10px;
+  }
+  .empty{text-align:center; padding:40px 20px; color:var(--muted); font-size:13px;}
+  .empty .e-icon{font-size:30px; margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ============================ MOCK DATA ============================ */
+
+const ROOMS = Array.from({length:40}, (_,i)=>{
+  const floor = Math.floor(i/10)+1;
+  const num = (i%10)+1;
+  return { id: `${floor}0${num}`, floor, capacity:3 };
+});
+
+// seeded issue density per room (0-5+) -> drives heatmap
+const seedIssues = {};
+ROOMS.forEach((r,i)=>{
+  // deterministic pseudo-random based on index
+  const v = (i*7 % 11);
+  seedIssues[r.id] = v > 7 ? Math.min(5, v-5) : (v > 4 ? 1 : 0);
+});
+
+const INITIAL_COMPLAINTS = [
+  { id:"C-1042", room:"203", student:"Aarav Mehta", title:"Water leakage near washbasin", category:"Plumbing", urgency:"Medium", status:"In Progress", dept:"Maintenance", time:"2h ago" },
+  { id:"C-1041", room:"305", student:"Priya Nair", title:"Roommate plays loud music after midnight", category:"Roommate Conflict", urgency:"Medium", status:"Open", dept:"Warden", time:"4h ago" },
+  { id:"C-1039", room:"112", student:"Rohan Das", title:"Fan not working, room very hot", category:"Electrical", urgency:"Low", status:"Resolved", dept:"Maintenance", time:"1d ago" },
+  { id:"C-1037", room:"401", student:"Sneha Iyer", title:"Smell of smoke and shouting from next room", category:"Safety / Disturbance", urgency:"High", status:"Open", dept:"Security + Warden", time:"6h ago" },
+  { id:"C-1035", room:"208", student:"Kabir Singh", title:"Washroom light flickering, possible short circuit", category:"Electrical", urgency:"High", status:"In Progress", dept:"Maintenance", time:"8h ago" },
+];
+
+const VISITOR_LOG = [
+  { id:"V-441", name:"Sunita Mehta", relation:"Mother", student:"Aarav Mehta · 203", status:"Checked In", time:"10:14 AM" },
+  { id:"V-440", name:"Deepak Rao", relation:"Friend", student:"Rohan Das · 112", status:"Checked Out", time:"09:02 AM" },
+  { id:"V-439", name:"Courier - Zomato", relation:"Delivery", student:"Priya Nair · 305", status:"Checked Out", time:"08:40 AM" },
+];
+
+const AI_QA = [
+  { q:["mess timing","mess time","food time","breakfast","lunch","dinner"], a:"Mess timings: Breakfast 7:30–9:30 AM, Lunch 12:30–2:30 PM, Dinner 7:30–9:30 PM. Sunday brunch runs till 10:30 AM." },
+  { q:["fee","fees","due","payment","pay"], a:"Your hostel fee for this term (₹48,000) is due on 30th June. ₹30,000 has been paid — ₹18,000 is pending. You can pay via the Fee Status card on your dashboard." },
+  { q:["leave","outpass","weekend"], a:"To apply for leave, go to Leave Requests → New Request. Approvals from your warden usually take 2–4 hours on weekdays. Make sure to mention your destination and emergency contact." },
+  { q:["visitor","guest"], a:"You can pre-approve a visitor from the Visitor Approval section. Security will scan their QR pass at the gate — approved visits are valid for the date you specify." },
+  { q:["wifi","wi-fi","internet","network"], a:"Hostel Wi-Fi SSID is 'SmartHostel-Net'. If you're facing connectivity issues in your room, raise a complaint under category 'Infrastructure' and it'll be auto-prioritized for the IT team." },
+  { q:["rule","rules","curfew","timing"], a:"Gate closes at 10:30 PM on weekdays and 11:30 PM on weekends. Entry after curfew requires prior warden approval logged via the Leave module." },
+  { q:["room change","transfer","roommate"], a:"You can request a room change from Room Change Requests. If it's due to a conflict, file a Roommate Conflict report first — our system uses that history to recommend a suitable room." },
+];
+
+/* ============================ AI HELPERS (mocked, deterministic) ============================ */
+
+function categorizeComplaint(text){
+  const t = text.toLowerCase();
+  let category = "General / Facilities";
+  let urgency = "Low";
+  let dept = "Maintenance";
+  let confidence = 82;
+
+  if(/(fight|assault|harass|threat|fire|smoke|weapon)/.test(t)){
+    category = "Safety / Disturbance"; urgency = "High"; dept = "Security + Warden"; confidence = 96;
+  } else if(/(water|leak|tap|pipe|toilet|washroom|drain)/.test(t)){
+    category = "Plumbing"; urgency = /(flood|overflow|burst)/.test(t) ? "High" : "Medium"; dept="Maintenance"; confidence=91;
+  } else if(/(electric|fan|light|socket|short circuit|wire|spark)/.test(t)){
+    category = "Electrical"; urgency = /(spark|short circuit|smoke)/.test(t) ? "High" : "Medium"; dept="Maintenance"; confidence=93;
+  } else if(/(noise|loud|music|disturb|snor)/.test(t)){
+    category = "Roommate Conflict"; urgency = "Medium"; dept="Warden"; confidence=88;
+  } else if(/(clean|garbage|smell|dirty|hygiene|pest|cockroach|rat)/.test(t)){
+    category = "Hygiene"; urgency = /(rat|pest|cockroach)/.test(t) ? "Medium" : "Low"; dept="Housekeeping"; confidence=89;
+  } else if(/(wifi|wi-fi|internet|network|router)/.test(t)){
+    category = "Infrastructure / IT"; urgency = "Low"; dept="IT Support"; confidence=85;
+  } else if(/(mess|food|meal)/.test(t)){
+    category = "Mess / Food"; urgency = "Low"; dept="Mess Committee"; confidence=80;
+  }
+  return { category, urgency, dept, confidence };
+}
+
+function aiAssistantReply(text){
+  const t = text.toLowerCase();
+  for(const item of AI_QA){
+    if(item.q.some(k=>t.includes(k))) return item.a;
+  }
+  return "I'm not fully sure about that yet — I've logged this question for the warden's team to add to my knowledge base. In the meantime, you can check the relevant portal section, or raise a complaint if it's something that needs action.";
+}
+
+function heatLevel(count){
+  if(count >= 3) return "red";
+  if(count >= 1) return "yellow";
+  return "green";
+}
+
+/* ============================ SHARED UI ============================ */
+
+function Toasts({toasts}){
+  return (
+    <div className="toast-wrap">
+      {toasts.map(t=>(
+        <div className="toast" key={t.id}>
+          <span className="ttag" style={{background:t.color || "var(--rose)"}}></span>
+          <span>{t.msg}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Pill({type, children}){
+  return <span className={`pill pill-${type}`}>{children}</span>;
+}
+
+function urgencyPillType(u){
+  return u === "High" ? "high" : u === "Medium" ? "medium" : "low";
+}
+function statusPillType(s){
+  if(s==="Open") return "open";
+  if(s==="In Progress") return "progress";
+  if(s==="Resolved") return "resolved";
+  if(s==="Acknowledged") return "ack";
+  return "open";
+}
+
+/* ============================ HEATMAP ============================ */
+
+function HeatMap({issues, onCellClick, selectable}){
+  return (
+    <div>
+      <div className="heatmap-grid">
+        {ROOMS.map(r=>{
+          const count = issues[r.id] ?? 0;
+          const level = heatLevel(count);
+          return (
+            <div
+              key={r.id}
+              className={`heat-cell heat-${level}`}
+              title={`Room ${r.id} — ${count} active issue(s)`}
+              onClick={()=> onCellClick && onCellClick(r.id, count)}
+              style={{cursor: selectable ? "pointer":"default"}}
+            >
+              {r.id}
+            </div>
+          );
+        })}
+      </div>
+      <div className="legend">
+        <span><span className="dot" style={{background:"var(--teal)"}}></span> Healthy (0 issues)</span>
+        <span><span className="dot" style={{background:"var(--amber)"}}></span> Moderate (1–2 issues)</span>
+        <span><span className="dot" style={{background:"var(--rose)"}}></span> High density (3+ issues)</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ LOGIN ============================ */
+
+const ROLES = [
+  { id:"student", title:"Student", sub:"Aarav Mehta · Room 203", icon:"🎓" },
+  { id:"parent", title:"Parent", sub:"Track your ward's wellbeing", icon:"👪" },
+  { id:"warden", title:"Warden", sub:"Block C · Operations", icon:"🛎️" },
+  { id:"security", title:"Security", sub:"Main Gate · Shift 2", icon:"🛡️" },
+  { id:"admin", title:"Admin", sub:"Hostel Management", icon:"📊" },
+];
+
+function Login({onLogin}){
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <div className="login-visual">
+          <div>
+            <div className="brand-mark">SH</div>
+            <h2 style={{marginTop:18, fontSize:26, fontWeight:800, lineHeight:1.25}}>SmartHostel AI</h2>
+            <p style={{marginTop:10, fontSize:13.5, color:"#cdeae5", maxWidth:280}}>
+              One platform for hostel operations, safety, and student wellbeing — built for students, wardens, parents, and security teams.
+            </p>
+          </div>
+          <div style={{fontSize:11.5, color:"#9fd8d0", letterSpacing:1}}>
+            v1.0 · PROTOTYPE BUILD
+          </div>
+        </div>
+        <div className="login-form">
+          <div className="eyebrow" style={{color:"var(--muted)", fontSize:11, letterSpacing:2, textTransform:"uppercase", fontWeight:700}}>Sign in as</div>
+          <h2 style={{fontSize:22, fontWeight:800, marginTop:6}}>Choose your role</h2>
+          <p style={{fontSize:12.5, color:"var(--muted)", marginTop:6}}>This is a demo build — select any role to explore that portal. No password required.</p>
+          <div className="role-grid">
+            {ROLES.map(r=>(
+              <button className="role-btn" key={r.id} onClick={()=>onLogin(r.id)}>
+                <div style={{fontSize:20, marginBottom:6}}>{r.icon}</div>
+                <div className="r-title">{r.title}</div>
+                <div className="r-sub">{r.sub}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ SOS MODAL ============================ */
+
+function SOSModal({onClose, onConfirm}){
+  return (
+    <div className="modal-bg">
+      <div className="modal">
+        <div className="icon-ring">🚨</div>
+        <h2 style={{fontSize:19, fontWeight:800}}>Trigger Emergency SOS?</h2>
+        <p style={{fontSize:13, color:"var(--muted)", marginTop:8, lineHeight:1.6}}>
+          This will immediately notify your <b>Warden</b>, the <b>Security Desk</b>, and your <b>emergency contacts</b> with your current room location. Use only for genuine emergencies.
+        </p>
+        <div style={{display:"flex", gap:10, marginTop:22}}>
+          <button className="btn btn-ghost" style={{flex:1}} onClick={onClose}>Cancel</button>
+          <button className="btn" style={{flex:1, background:"var(--rose)", color:"#fff"}} onClick={onConfirm}>Send SOS Alert</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ STUDENT PORTAL ============================ */
+
+function StudentPortal({state, setState, addToast}){
+  const [tab, setTab] = useState("dashboard");
+  const [showSOS, setShowSOS] = useState(false);
+
+  const navItems = [
+    {id:"dashboard", icon:"🏠", label:"Dashboard"},
+    {id:"complaints", icon:"📋", label:"Complaints"},
+    {id:"roomchange", icon:"🔁", label:"Room Change"},
+    {id:"leave", icon:"📅", label:"Leave Requests"},
+    {id:"visitors", icon:"👤", label:"Visitor Approval"},
+    {id:"assistant", icon:"🤖", label:"AI Assistant"},
+  ];
+
+  function triggerSOS(){
+    const alert = { id:`SOS-${Math.floor(Math.random()*900+100)}`, student:"Aarav Mehta", room:"203", time:"Just now", status:"Acknowledged"===null?"":"Pending" };
+    setState(s=>({...s, sosAlerts:[{...alert, status:"Pending"}, ...s.sosAlerts]}));
+    setShowSOS(false);
+    addToast("🚨 SOS sent — Warden & Security notified", "var(--rose)");
+  }
+
+  return (
+    <Shell role="student" tab={tab} setTab={setTab} navItems={navItems} userLabel="Aarav Mehta" userSub="Room 203 · Block C" avatarColor="var(--indigo)" initials="AM">
+      {showSOS && <SOSModal onClose={()=>setShowSOS(false)} onConfirm={triggerSOS} />}
+
+      {tab==="dashboard" && <StudentDashboard state={state} onSOS={()=>setShowSOS(true)} />}
+      {tab==="complaints" && <StudentComplaints state={state} setState={setState} addToast={addToast} />}
+      {tab==="roomchange" && <RoomChange state={state} setState={setState} addToast={addToast}/>}
+      {tab==="leave" && <LeaveRequests state={state} setState={setState} addToast={addToast} />}
+      {tab==="visitors" && <VisitorApproval state={state} setState={setState} addToast={addToast} />}
+      {tab==="assistant" && <AIAssistant />}
+    </Shell>
+  );
+}
+
+function StudentDashboard({state, onSOS}){
+  const myComplaints = state.complaints.filter(c=>c.room==="203");
+  return (
+    <div>
+      <div className="topbar">
+        <div>
+          <div className="eyebrow">Welcome back</div>
+          <h1>Aarav Mehta</h1>
+          <p style={{fontSize:13, color:"var(--muted)", marginTop:4}}>Room 203 · Block C · B.Tech CSE, 3rd Year</p>
+        </div>
+        <button className="sos-button" onClick={onSOS}><span className="pulse"></span> EMERGENCY SOS</button>
+      </div>
+
+      <div className="grid grid-4" style={{marginBottom:18}}>
+        <div className="card">
+          <h3>Fee Status</h3>
+          <div className="stat">₹18,000</div>
+          <div className="stat-label">Pending of ₹48,000 total</div>
+          <div className="stat-trend trend-down">Due 30 Jun 2026</div>
+        </div>
+        <div className="card">
+          <h3>Active Complaints</h3>
+          <div className="stat">{myComplaints.length}</div>
+          <div className="stat-label">Filed by you</div>
+          <div className="stat-trend trend-up">1 in progress</div>
+        </div>
+        <div className="card">
+          <h3>Room Status</h3>
+          <div className="stat">203</div>
+          <div className="stat-label">Block C · 3rd Floor · Triple sharing</div>
+          <div className="stat-trend trend-up">Heat status: Healthy</div>
+        </div>
+        <div className="card">
+          <h3>Leave Balance</h3>
+          <div className="stat">{4 - state.leaveRequests.filter(l=>l.status!=="Rejected").length >= 0 ? 4 - state.leaveRequests.filter(l=>l.status!=="Rejected").length : 0}</div>
+          <div className="stat-label">Outstation passes left this month</div>
+          <div className="stat-trend trend-up">{state.leaveRequests.length} request(s) filed</div>
+        </div>
+      </div>
+
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>Recent Complaint Activity</h3>
+          {myComplaints.length === 0 && <div className="empty"><div className="e-icon">📭</div>No complaints filed yet.</div>}
+          {myComplaints.map(c=>(
+            <div className="list-row" key={c.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{c.title}</div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{c.id} · {c.time} · <span className="tag">{c.category}</span></div>
+              </div>
+              <Pill type={statusPillType(c.status)}>{c.status}</Pill>
+            </div>
+          ))}
+        </div>
+        <div className="card">
+          <h3>Notifications</h3>
+          <div className="list-row">
+            <div style={{fontSize:13}}>🔧 Maintenance team scheduled for tomorrow, 10 AM (Plumbing — Room 203)</div>
+          </div>
+          <div className="list-row">
+            <div style={{fontSize:13}}>💰 Fee reminder: ₹18,000 pending, due in 17 days</div>
+          </div>
+          <div className="list-row">
+            <div style={{fontSize:13}}>📰 Mess menu updated for next week — check Mess tab in AI Assistant</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StudentComplaints({state, setState, addToast}){
+  const [text, setText] = useState("");
+  const [aiResult, setAiResult] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  function runAI(){
+    if(!text.trim()) return;
+    setSubmitting(true);
+    setAiResult(null);
+    setTimeout(()=>{
+      setAiResult(categorizeComplaint(text));
+      setSubmitting(false);
+    }, 700);
+  }
+
+  function submitComplaint(){
+    if(!aiResult) return;
+    const id = `C-${Math.floor(1000+Math.random()*9000)}`;
+    const newC = {
+      id, room:"203", student:"Aarav Mehta", title:text.slice(0,80),
+      category:aiResult.category, urgency:aiResult.urgency, status:"Open", dept:aiResult.dept, time:"Just now"
+    };
+    setState(s=>({
+      ...s,
+      complaints:[newC, ...s.complaints],
+      issues:{...s.issues, "203": (s.issues["203"]||0) + 1}
+    }));
+    setText(""); setAiResult(null);
+    addToast(`Complaint ${id} filed — routed to ${aiResult.dept}`, "var(--indigo)");
+  }
+
+  const myComplaints = state.complaints.filter(c=>c.room==="203");
+
+  return (
+    <div>
+      <div className="topbar">
+        <div><div className="eyebrow">Student Portal</div><h1>Complaints</h1></div>
+      </div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>File a New Complaint</h3>
+          <div className="field">
+            <label>Describe the issue</label>
+            <textarea rows="4" placeholder="e.g. The water tap in our washroom has been leaking since this morning and water is pooling on the floor."
+              value={text} onChange={e=>{setText(e.target.value); setAiResult(null);}} />
+          </div>
+          <button className="btn btn-primary" onClick={runAI} disabled={!text.trim() || submitting}>
+            {submitting ? "Analyzing with AI…" : "Analyze with AI"}
+          </button>
+
+          {aiResult && (
+            <div className="ai-result">
+              <div className="ai-head"><span className="ai-dot"></span> AI Complaint Intelligence — {aiResult.confidence}% confidence</div>
+              <div className="ai-row">
+                <span className="tag">Category: {aiResult.category}</span>
+                <Pill type={urgencyPillType(aiResult.urgency)}>Urgency: {aiResult.urgency}</Pill>
+                <span className="tag">Routed to: {aiResult.dept}</span>
+              </div>
+              <div style={{marginTop:14, display:"flex", gap:10}}>
+                <button className="btn btn-teal" onClick={submitComplaint}>Confirm & Submit</button>
+                <button className="btn btn-ghost" onClick={()=>setAiResult(null)}>Edit description</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <h3>Your Complaints</h3>
+          {myComplaints.length === 0 && <div className="empty"><div className="e-icon">📭</div>No complaints yet — file one to see AI categorization in action.</div>}
+          {myComplaints.map(c=>(
+            <div className="list-row" key={c.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{c.title}</div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{c.id} · {c.time} · <span className="tag">{c.category}</span> · <span className="tag">{c.dept}</span></div>
+              </div>
+              <div style={{display:"flex", flexDirection:"column", gap:6, alignItems:"flex-end"}}>
+                <Pill type={urgencyPillType(c.urgency)}>{c.urgency}</Pill>
+                <Pill type={statusPillType(c.status)}>{c.status}</Pill>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoomChange({state, setState, addToast}){
+  const [reason, setReason] = useState("");
+  const [done, setDone] = useState(false);
+
+  // recommend a room with low issue count, different from 203
+  const recommended = Object.entries(state.issues)
+    .filter(([room])=>room!=="203")
+    .sort((a,b)=>a[1]-b[1])[0];
+
+  function submit(){
+    setState(s=>({...s, roomTransfers:[{id:`RT-${Math.floor(100+Math.random()*900)}`, student:"Aarav Mehta", from:"203", to: recommended ? recommended[0] : "—", reason, status:"Pending Review", time:"Just now"}, ...s.roomTransfers]}));
+    setDone(true);
+    addToast("Room change request submitted to Warden", "var(--indigo)");
+  }
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Student Portal</div><h1>Room Change Request</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>Request Details</h3>
+          <div className="field">
+            <label>Reason for room change</label>
+            <textarea rows="4" placeholder="e.g. Repeated noise issues with roommate, already raised 2 complaints over 3 weeks." value={reason} onChange={e=>setReason(e.target.value)} disabled={done} />
+          </div>
+          {!done ? (
+            <button className="btn btn-primary" disabled={!reason.trim()} onClick={submit}>Submit Request</button>
+          ) : (
+            <div className="ai-result">✅ Request submitted. The warden will review the AI-suggested allocation below alongside your conflict history.</div>
+          )}
+        </div>
+        <div className="card">
+          <h3>Smart Room Suggestion</h3>
+          {recommended ? (
+            <>
+              <div className="ai-result">
+                <div className="ai-head"><span className="ai-dot"></span> AI Recommendation</div>
+                <p style={{fontSize:13, lineHeight:1.6}}>
+                  Based on current occupancy, conflict history, and live issue density, room <b>{recommended[0]}</b> is the best available match — currently rated <b>{heatLevel(recommended[1]) === "green" ? "Healthy" : "Moderate"}</b> with {recommended[1]} active issue(s).
+                </p>
+              </div>
+              <div style={{marginTop:16}}>
+                <h3>Heat Status Preview</h3>
+                <HeatMap issues={state.issues} />
+              </div>
+            </>
+          ) : <div className="empty">No data available.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeaveRequests({state, setState, addToast}){
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [reason, setReason] = useState("");
+
+  function submit(){
+    setState(s=>({...s, leaveRequests:[{id:`L-${Math.floor(100+Math.random()*900)}`, student:"Aarav Mehta", from, to, reason, status:"Pending"}, ...s.leaveRequests]}));
+    setFrom(""); setTo(""); setReason("");
+    addToast("Leave request sent to warden for approval", "var(--indigo)");
+  }
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Student Portal</div><h1>Leave Requests</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>New Leave Request</h3>
+          <div className="grid" style={{gridTemplateColumns:"1fr 1fr", gap:12}}>
+            <div className="field"><label>From Date</label><input type="date" value={from} onChange={e=>setFrom(e.target.value)} /></div>
+            <div className="field"><label>To Date</label><input type="date" value={to} onChange={e=>setTo(e.target.value)} /></div>
+          </div>
+          <div className="field"><label>Reason / Destination</label><textarea rows="3" value={reason} onChange={e=>setReason(e.target.value)} placeholder="e.g. Visiting home in Pune for sister's wedding" /></div>
+          <button className="btn btn-primary" disabled={!from||!to||!reason.trim()} onClick={submit}>Submit Request</button>
+        </div>
+        <div className="card">
+          <h3>Your Requests</h3>
+          {state.leaveRequests.length===0 && <div className="empty"><div className="e-icon">📭</div>No leave requests yet.</div>}
+          {state.leaveRequests.map(l=>(
+            <div className="list-row" key={l.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{l.from} → {l.to}</div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{l.reason}</div>
+              </div>
+              <Pill type={l.status==="Approved"?"resolved":l.status==="Rejected"?"high":"open"}>{l.status}</Pill>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisitorApproval({state, setState, addToast}){
+  const [name, setName] = useState("");
+  const [relation, setRelation] = useState("");
+  const [date, setDate] = useState("");
+
+  function submit(){
+    setState(s=>({...s, visitorApprovals:[{id:`VA-${Math.floor(100+Math.random()*900)}`, name, relation, date, status:"Approved · QR Generated"}, ...s.visitorApprovals]}));
+    setName(""); setRelation(""); setDate("");
+    addToast("Visitor pre-approved. QR pass generated for security.", "var(--teal-deep)");
+  }
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Student Portal</div><h1>Visitor Approval</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>Pre-Approve a Visitor</h3>
+          <div className="field"><label>Visitor Name</label><input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Sunita Mehta" /></div>
+          <div className="field"><label>Relation</label><input value={relation} onChange={e=>setRelation(e.target.value)} placeholder="e.g. Mother" /></div>
+          <div className="field"><label>Visit Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} /></div>
+          <button className="btn btn-primary" disabled={!name||!relation||!date} onClick={submit}>Generate QR Pass</button>
+        </div>
+        <div className="card">
+          <h3>Your Approved Visitors</h3>
+          {state.visitorApprovals.length===0 && <div className="empty"><div className="e-icon">🪪</div>No visitor passes generated yet.</div>}
+          {state.visitorApprovals.map(v=>(
+            <div className="list-row" key={v.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{v.name} <span style={{color:"var(--muted)", fontWeight:500}}>· {v.relation}</span></div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>Valid: {v.date}</div>
+              </div>
+              <Pill type="resolved">{v.status}</Pill>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AIAssistant(){
+  const [messages, setMessages] = useState([
+    { from:"bot", text:"Hi Aarav 👋 I'm your Hostel AI Assistant. Ask me about fees, mess timings, leave, visitors, room rules, or anything hostel-related." }
+  ]);
+  const [input, setInput] = useState("");
+  const scrollRef = useRef(null);
+
+  useEffect(()=>{ if(scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
+
+  function send(text){
+    if(!text.trim()) return;
+    const userMsg = {from:"user", text};
+    setMessages(m=>[...m, userMsg]);
+    setInput("");
+    setTimeout(()=>{
+      setMessages(m=>[...m, {from:"bot", text: aiAssistantReply(text)}]);
+    }, 500);
+  }
+
+  const suggestions = ["What time is dinner?", "How much fee do I owe?", "How do I apply for leave?", "What's the curfew time?"];
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Student Portal</div><h1>AI Hostel Assistant</h1></div></div>
+      <div className="card" style={{maxWidth:760}}>
+        <div className="chat-window" ref={scrollRef}>
+          {messages.map((m,i)=>(
+            <div className={`msg ${m.from==="bot"?"msg-bot":"msg-user"}`} key={i}>{m.text}</div>
+          ))}
+        </div>
+        <div style={{display:"flex", gap:8, flexWrap:"wrap", marginTop:12}}>
+          {suggestions.map(s=>(
+            <span className="suggestion" key={s} onClick={()=>send(s)}>{s}</span>
+          ))}
+        </div>
+        <div className="chat-input-row">
+          <input placeholder="Type your question…" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter") send(input);}} />
+          <button className="btn btn-primary" onClick={()=>send(input)}>Send</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ PARENT PORTAL ============================ */
+
+function ParentPortal({state, addToast}){
+  const [tab, setTab] = useState("dashboard");
+  const navItems = [
+    {id:"dashboard", icon:"🏠", label:"Dashboard"},
+    {id:"fees", icon:"💳", label:"Fee Tracking"},
+    {id:"updates", icon:"🔔", label:"Hostel Updates"},
+  ];
+  const childComplaints = state.complaints.filter(c=>c.room==="203");
+  const childSOS = state.sosAlerts.filter(a=>a.room==="203");
+
+  return (
+    <Shell role="parent" tab={tab} setTab={setTab} navItems={navItems} userLabel="Mrs. Mehta" userSub="Parent of Aarav Mehta" avatarColor="var(--amber)" initials="SM">
+      <div className="topbar"><div><div className="eyebrow">Parent Portal</div><h1>Aarav's Hostel Summary</h1></div></div>
+
+      {childSOS.length>0 && (
+        <div className="card" style={{borderColor:"var(--rose)", background:"#fff5f6", marginBottom:18}}>
+          <h3 style={{color:"var(--rose)"}}>⚠️ Emergency Alert</h3>
+          <p style={{fontSize:13.5}}>An SOS was triggered by Aarav from Room 203 ({childSOS[0].time}). Status: <b>{childSOS[0].status}</b>. The warden and security team have been notified and are responding.</p>
+        </div>
+      )}
+
+      {tab==="dashboard" && (
+        <div className="grid grid-3">
+          <div className="card">
+            <h3>Fee Status</h3>
+            <div className="stat">₹18,000</div>
+            <div className="stat-label">Pending of ₹48,000 — due 30 Jun 2026</div>
+          </div>
+          <div className="card">
+            <h3>Open Complaints</h3>
+            <div className="stat">{childComplaints.filter(c=>c.status!=="Resolved").length}</div>
+            <div className="stat-label">Filed by Aarav this term</div>
+          </div>
+          <div className="card">
+            <h3>Leave Status</h3>
+            <div className="stat">{state.leaveRequests.length}</div>
+            <div className="stat-label">Requests filed · check Hostel Updates for approvals</div>
+          </div>
+          <div className="card" style={{gridColumn:"1 / -1"}}>
+            <h3>Recent Activity</h3>
+            {childComplaints.map(c=>(
+              <div className="list-row" key={c.id}>
+                <div>
+                  <div style={{fontWeight:700, fontSize:13.5}}>{c.title}</div>
+                  <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{c.time} · <span className="tag">{c.category}</span></div>
+                </div>
+                <Pill type={statusPillType(c.status)}>{c.status}</Pill>
+              </div>
+            ))}
+            {childComplaints.length===0 && <div className="empty"><div className="e-icon">📭</div>No activity yet.</div>}
+          </div>
+        </div>
+      )}
+
+      {tab==="fees" && (
+        <div className="card" style={{maxWidth:600}}>
+          <h3>Fee Breakdown</h3>
+          <div className="list-row"><span>Hostel Fee</span><span className="mono">₹38,000</span></div>
+          <div className="list-row"><span>Electricity Charges (Apr–Jun)</span><span className="mono">₹6,500</span></div>
+          <div className="list-row"><span>Mess Fee</span><span className="mono">₹3,500</span></div>
+          <div className="list-row"><b>Total Due</b><b className="mono">₹48,000</b></div>
+          <div className="list-row"><span>Paid</span><span className="mono" style={{color:"var(--teal-deep)"}}>₹30,000</span></div>
+          <div className="list-row"><b>Outstanding</b><b className="mono" style={{color:"var(--rose)"}}>₹18,000</b></div>
+          <button className="btn btn-primary" style={{marginTop:10}} onClick={()=>addToast("Redirecting to payment gateway (demo)", "var(--teal-deep)")}>Pay Now</button>
+        </div>
+      )}
+
+      {tab==="updates" && (
+        <div className="card" style={{maxWidth:680}}>
+          <h3>Hostel Updates</h3>
+          <div className="list-row"><div style={{fontSize:13}}>🔧 Plumbing issue in Room 203 — maintenance scheduled for tomorrow.</div></div>
+          <div className="list-row"><div style={{fontSize:13}}>📅 Leave request for {state.leaveRequests[0]?.from || "—"} is pending warden approval.</div></div>
+          <div className="list-row"><div style={{fontSize:13}}>🍽️ Mess menu has been updated for the upcoming week.</div></div>
+          <div className="list-row"><div style={{fontSize:13}}>🛡️ Block C hostel-wide fire drill scheduled this Saturday, 5 PM.</div></div>
+        </div>
+      )}
+    </Shell>
+  );
+}
+
+/* ============================ WARDEN PORTAL ============================ */
+
+function WardenPortal({state, setState, addToast}){
+  const [tab, setTab] = useState("dashboard");
+  const navItems = [
+    {id:"dashboard", icon:"🏠", label:"Dashboard"},
+    {id:"complaints", icon:"📋", label:"Complaints"},
+    {id:"emergency", icon:"🚨", label:"Emergency Dashboard"},
+    {id:"roomchange", icon:"🔁", label:"Room Change Approvals"},
+    {id:"leave", icon:"📅", label:"Leave Approvals"},
+    {id:"analytics", icon:"📈", label:"Analytics"},
+  ];
+
+  function ackSOS(id){
+    setState(s=>({...s, sosAlerts: s.sosAlerts.map(a=> a.id===id ? {...a, status:"Acknowledged"} : a)}));
+    addToast("SOS acknowledged — response team dispatched", "var(--teal-deep)");
+  }
+  function resolveSOS(id){
+    setState(s=>({...s, sosAlerts: s.sosAlerts.map(a=> a.id===id ? {...a, status:"Resolved"} : a)}));
+    addToast("SOS marked resolved & logged as incident", "var(--teal-deep)");
+  }
+  function updateComplaintStatus(id, status){
+    setState(s=>({...s, complaints: s.complaints.map(c=> c.id===id ? {...c, status} : c)}));
+    addToast(`${id} marked as ${status}`, "var(--indigo)");
+  }
+  function decideRoomChange(id, decision){
+    setState(s=>({...s, roomTransfers: s.roomTransfers.map(r=> r.id===id ? {...r, status:decision} : r)}));
+    addToast(`Room change ${id} ${decision.toLowerCase()}`, "var(--indigo)");
+  }
+  function decideLeave(idx, decision){
+    setState(s=>({...s, leaveRequests: s.leaveRequests.map((l,i)=> i===idx ? {...l, status:decision} : l)}));
+    addToast(`Leave request ${decision.toLowerCase()}`, "var(--indigo)");
+  }
+
+  return (
+    <Shell role="warden" tab={tab} setTab={setTab} navItems={navItems} userLabel="Mr. Khanna" userSub="Warden · Block C" avatarColor="var(--teal-deep)" initials="VK">
+      {tab==="dashboard" && <WardenDashboard state={state} setTab={setTab} />}
+      {tab==="complaints" && <WardenComplaints state={state} updateComplaintStatus={updateComplaintStatus} />}
+      {tab==="emergency" && <WardenEmergency state={state} ackSOS={ackSOS} resolveSOS={resolveSOS} />}
+      {tab==="roomchange" && <WardenRoomChange state={state} decideRoomChange={decideRoomChange} />}
+      {tab==="leave" && <WardenLeave state={state} decideLeave={decideLeave} />}
+      {tab==="analytics" && <WardenAnalytics state={state} />}
+    </Shell>
+  );
+}
+
+function WardenDashboard({state, setTab}){
+  const open = state.complaints.filter(c=>c.status==="Open").length;
+  const highUrgency = state.complaints.filter(c=>c.urgency==="High" && c.status!=="Resolved").length;
+  const activeSOS = state.sosAlerts.filter(a=>a.status!=="Resolved").length;
+  const redRooms = Object.values(state.issues).filter(v=>heatLevel(v)==="red").length;
+  const yellowRooms = Object.values(state.issues).filter(v=>heatLevel(v)==="yellow").length;
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Warden Portal · Block C</div><h1>Operations Overview</h1></div></div>
+
+      {activeSOS>0 && (
+        <div className="card" style={{borderColor:"var(--rose)", background:"#fff5f6", marginBottom:18, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+          <div>
+            <h3 style={{color:"var(--rose)", marginBottom:4}}>🚨 {activeSOS} Active Emergency Alert{activeSOS>1?"s":""}</h3>
+            <p style={{fontSize:13}}>Immediate attention required — view Emergency Dashboard.</p>
+          </div>
+          <button className="btn" style={{background:"var(--rose)", color:"#fff"}} onClick={()=>setTab("emergency")}>View Now</button>
+        </div>
+      )}
+
+      <div className="grid grid-4" style={{marginBottom:18}}>
+        <div className="card"><h3>Open Complaints</h3><div className="stat">{open}</div><div className="stat-label">Across all floors</div></div>
+        <div className="card"><h3>High Urgency</h3><div className="stat" style={{color:"var(--rose)"}}>{highUrgency}</div><div className="stat-label">Needs same-day action</div></div>
+        <div className="card"><h3>Active SOS</h3><div className="stat" style={{color:activeSOS>0?"var(--rose)":undefined}}>{activeSOS}</div><div className="stat-label">Pending or acknowledged</div></div>
+        <div className="card"><h3>Rooms Flagged</h3><div className="stat">{redRooms+yellowRooms}</div><div className="stat-label">{redRooms} high · {yellowRooms} moderate</div></div>
+      </div>
+
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>Hostel Heat Map — Block C (Floors 1–4)</h3>
+          <HeatMap issues={state.issues} />
+        </div>
+        <div className="card">
+          <h3>Latest Complaints</h3>
+          {state.complaints.slice(0,5).map(c=>(
+            <div className="list-row" key={c.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{c.title}</div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>Room {c.room} · {c.student} · <span className="tag">{c.dept}</span></div>
+              </div>
+              <Pill type={urgencyPillType(c.urgency)}>{c.urgency}</Pill>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WardenComplaints({state, updateComplaintStatus}){
+  const [filter, setFilter] = useState("All");
+  const filtered = filter==="All" ? state.complaints : state.complaints.filter(c=>c.urgency===filter);
+  return (
+    <div>
+      <div className="topbar">
+        <div><div className="eyebrow">Warden Portal</div><h1>Complaint Dashboard</h1></div>
+        <select style={{width:160}} value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option>All</option><option>High</option><option>Medium</option><option>Low</option>
+        </select>
+      </div>
+      <div className="card">
+        {filtered.map(c=>(
+          <div className="list-row" key={c.id}>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700, fontSize:13.5}}>{c.title}</div>
+              <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>
+                {c.id} · Room {c.room} · {c.student} · {c.time} · <span className="tag">{c.category}</span> · <span className="tag">AI routed → {c.dept}</span>
+              </div>
+            </div>
+            <Pill type={urgencyPillType(c.urgency)}>{c.urgency}</Pill>
+            <select value={c.status} onChange={e=>updateComplaintStatus(c.id, e.target.value)} style={{width:140}}>
+              <option>Open</option><option>In Progress</option><option>Resolved</option>
+            </select>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WardenEmergency({state, ackSOS, resolveSOS}){
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Warden Portal</div><h1>Emergency Dashboard</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>SOS Alerts</h3>
+          {state.sosAlerts.length===0 && <div className="empty"><div className="e-icon">✅</div>No emergency alerts. All clear.</div>}
+          {state.sosAlerts.map(a=>(
+            <div className="list-row" key={a.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{a.id} — {a.student}</div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>Room {a.room} · Triggered {a.time}</div>
+              </div>
+              <div style={{display:"flex", gap:8, alignItems:"center"}}>
+                <Pill type={a.status==="Resolved"?"resolved":a.status==="Acknowledged"?"ack":"high"}>{a.status}</Pill>
+                {a.status==="Pending" && <button className="btn btn-ghost" onClick={()=>ackSOS(a.id)}>Acknowledge</button>}
+                {a.status==="Acknowledged" && <button className="btn btn-teal" onClick={()=>resolveSOS(a.id)}>Resolve</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="card">
+          <h3>Escalation Workflow</h3>
+          <div className="list-row"><div style={{fontSize:13}}>1. SOS triggered → Warden + Security + Emergency contacts notified instantly.</div></div>
+          <div className="list-row"><div style={{fontSize:13}}>2. If not acknowledged within <b>3 minutes</b>, alert escalates to Hostel Manager + Campus Security Head.</div></div>
+          <div className="list-row"><div style={{fontSize:13}}>3. On acknowledgment, response team location & ETA shared with student device.</div></div>
+          <div className="list-row"><div style={{fontSize:13}}>4. On resolution, full incident log auto-generated for Admin records.</div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WardenRoomChange({state, decideRoomChange}){
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Warden Portal</div><h1>Room Change Approvals</h1></div></div>
+      <div className="card">
+        {state.roomTransfers.length===0 && <div className="empty"><div className="e-icon">📭</div>No pending requests.</div>}
+        {state.roomTransfers.map(r=>(
+          <div className="list-row" key={r.id}>
+            <div>
+              <div style={{fontWeight:700, fontSize:13.5}}>{r.student}: Room {r.from} → {r.to}</div>
+              <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{r.reason}</div>
+            </div>
+            {r.status==="Pending Review" ? (
+              <div style={{display:"flex", gap:8}}>
+                <button className="btn btn-ghost" onClick={()=>decideRoomChange(r.id,"Rejected")}>Reject</button>
+                <button className="btn btn-teal" onClick={()=>decideRoomChange(r.id,"Approved")}>Approve</button>
+              </div>
+            ) : <Pill type={r.status==="Approved"?"resolved":"high"}>{r.status}</Pill>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WardenLeave({state, decideLeave}){
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Warden Portal</div><h1>Leave Approvals</h1></div></div>
+      <div className="card">
+        {state.leaveRequests.length===0 && <div className="empty"><div className="e-icon">📭</div>No leave requests.</div>}
+        {state.leaveRequests.map((l,i)=>(
+          <div className="list-row" key={l.id}>
+            <div>
+              <div style={{fontWeight:700, fontSize:13.5}}>{l.student}: {l.from} → {l.to}</div>
+              <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{l.reason}</div>
+            </div>
+            {l.status==="Pending" ? (
+              <div style={{display:"flex", gap:8}}>
+                <button className="btn btn-ghost" onClick={()=>decideLeave(i,"Rejected")}>Reject</button>
+                <button className="btn btn-teal" onClick={()=>decideLeave(i,"Approved")}>Approve</button>
+              </div>
+            ) : <Pill type={l.status==="Approved"?"resolved":"high"}>{l.status}</Pill>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WardenAnalytics({state}){
+  const categories = {};
+  state.complaints.forEach(c=>{ categories[c.category] = (categories[c.category]||0)+1; });
+  const maxCat = Math.max(...Object.values(categories), 1);
+  const colors = ["var(--indigo)","var(--teal)","var(--amber)","var(--rose)","#8893ab","#5b6cf0"];
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Warden Portal</div><h1>Analytics Dashboard</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>Complaints by Category</h3>
+          {Object.entries(categories).map(([cat,count],i)=>(
+            <div className="bar-row" key={cat}>
+              <span className="bar-label">{cat}</span>
+              <div className="bar-track"><div className="bar-fill" style={{width:`${(count/maxCat)*100}%`, background:colors[i%colors.length]}}></div></div>
+              <span className="bar-val">{count}</span>
+            </div>
+          ))}
+        </div>
+        <div className="card">
+          <h3>Occupancy Forecast (AI)</h3>
+          <div className="ai-result">
+            <div className="ai-head"><span className="ai-dot"></span> AI Occupancy Prediction</div>
+            <p style={{fontSize:13, lineHeight:1.7}}>
+              Based on current admission trends and historical vacancy patterns, Block C is projected to reach <b>96% occupancy</b> within 3 weeks. Room 401 cluster shows early signs of repeated complaints — recommend a maintenance sweep before peak occupancy.
+            </p>
+          </div>
+          <div style={{marginTop:18}}>
+            <h3>Block-wide Heat Distribution</h3>
+            <HeatMap issues={state.issues} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ SECURITY PORTAL ============================ */
+
+function SecurityPortal({state, setState, addToast}){
+  const [tab, setTab] = useState("entry");
+  const navItems = [
+    {id:"entry", icon:"🚪", label:"Visitor Entry / Exit"},
+    {id:"qr", icon:"📷", label:"QR Pass Validation"},
+    {id:"incidents", icon:"⚠️", label:"Incident Reporting"},
+    {id:"emergency", icon:"🚨", label:"Emergency Response"},
+  ];
+
+  return (
+    <Shell role="security" tab={tab} setTab={setTab} navItems={navItems} userLabel="R. Pawar" userSub="Security · Main Gate" avatarColor="var(--rose)" initials="RP">
+      {tab==="entry" && <SecurityEntry state={state} setState={setState} addToast={addToast} />}
+      {tab==="qr" && <SecurityQR addToast={addToast} />}
+      {tab==="incidents" && <SecurityIncidents state={state} setState={setState} addToast={addToast} />}
+      {tab==="emergency" && <SecurityEmergency state={state} />}
+    </Shell>
+  );
+}
+
+function SecurityEntry({state, setState, addToast}){
+  function toggleStatus(id){
+    setState(s=>({...s, visitorLog: s.visitorLog.map(v=> v.id===id ? {...v, status: v.status==="Checked In" ? "Checked Out" : "Checked In", time:"Just now"} : v)}));
+    addToast("Visitor log updated", "var(--teal-deep)");
+  }
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Security Portal</div><h1>Entry / Exit Logs</h1></div></div>
+      <div className="card">
+        {state.visitorLog.map(v=>(
+          <div className="list-row" key={v.id}>
+            <div>
+              <div style={{fontWeight:700, fontSize:13.5}}>{v.name} <span style={{color:"var(--muted)", fontWeight:500}}>· {v.relation}</span></div>
+              <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>Visiting: {v.student} · {v.time}</div>
+            </div>
+            <div style={{display:"flex", gap:8, alignItems:"center"}}>
+              <Pill type={v.status==="Checked In"?"ack":"resolved"}>{v.status}</Pill>
+              <button className="btn btn-ghost" onClick={()=>toggleStatus(v.id)}>{v.status==="Checked In" ? "Check Out" : "Check In"}</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SecurityQR({addToast}){
+  const [code, setCode] = useState("");
+  const [result, setResult] = useState(null);
+
+  function validate(){
+    if(!code.trim()) return;
+    // mock: codes starting with "VA" are valid
+    const valid = code.toUpperCase().startsWith("VA") || code.toUpperCase().startsWith("V-");
+    setResult({valid, code});
+    if(valid) addToast(`✅ Pass ${code} verified — entry logged`, "var(--teal-deep)");
+    else addToast(`❌ Pass ${code} invalid or expired`, "var(--rose)");
+  }
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Security Portal</div><h1>QR Pass Validation</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card" style={{textAlign:"center"}}>
+          <h3>Scan / Enter Pass Code</h3>
+          <div className="qr-box">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+              <rect width="100" height="100" fill="#fff"/>
+              {Array.from({length:64}).map((_,i)=>{
+                const x = (i%8)*12.5, y = Math.floor(i/8)*12.5;
+                const on = (i*13)%7 < 3;
+                return on ? <rect key={i} x={x} y={y} width="12.5" height="12.5" fill="#10151f"/> : null;
+              })}
+            </svg>
+          </div>
+          <div className="field" style={{marginTop:18}}>
+            <label>Pass Code</label>
+            <input placeholder="e.g. VA-441" value={code} onChange={e=>setCode(e.target.value)} />
+          </div>
+          <button className="btn btn-primary" onClick={validate}>Validate Pass</button>
+          {result && (
+            <div className="ai-result" style={{textAlign:"left", marginTop:16}}>
+              {result.valid ? `✅ Pass ${result.code} is valid. Visitor approved for today's entry.` : `❌ Pass ${result.code} could not be verified. Please check ID manually.`}
+            </div>
+          )}
+        </div>
+        <div className="card">
+          <h3>AI Visitor Risk Analysis</h3>
+          <p style={{fontSize:13, lineHeight:1.7, color:"var(--muted)"}}>The system flags unusual visitor patterns — e.g. the same visitor checking in across multiple students' rooms, or repeated late-night entries.</p>
+          <div className="list-row">
+            <div style={{fontSize:13}}>🟡 "Deepak Rao" has visited 3 different rooms this month — flagged for review.</div>
+            <Pill type="medium">Medium Risk</Pill>
+          </div>
+          <div className="list-row">
+            <div style={{fontSize:13}}>🟢 "Sunita Mehta" — regular registered guardian, low risk.</div>
+            <Pill type="low">Low Risk</Pill>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SecurityIncidents({state, setState, addToast}){
+  const [title, setTitle] = useState("");
+  const [severity, setSeverity] = useState("Medium");
+
+  function submit(){
+    setState(s=>({...s, incidents:[{id:`INC-${Math.floor(100+Math.random()*900)}`, title, severity, status:"Reported", time:"Just now"}, ...s.incidents]}));
+    setTitle("");
+    addToast("Incident logged and routed to warden", "var(--rose)");
+  }
+
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Security Portal</div><h1>Incident Reporting</h1></div></div>
+      <div className="grid grid-2">
+        <div className="card">
+          <h3>Report New Incident</h3>
+          <div className="field"><label>Description</label><textarea rows="3" value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Altercation reported near Block C entrance, 2 students involved" /></div>
+          <div className="field"><label>Severity</label>
+            <select value={severity} onChange={e=>setSeverity(e.target.value)}>
+              <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+            </select>
+          </div>
+          <button className="btn btn-primary" disabled={!title.trim()} onClick={submit}>Log Incident</button>
+        </div>
+        <div className="card">
+          <h3>Incident Log</h3>
+          {state.incidents.length===0 && <div className="empty"><div className="e-icon">✅</div>No incidents reported.</div>}
+          {state.incidents.map(inc=>(
+            <div className="list-row" key={inc.id}>
+              <div>
+                <div style={{fontWeight:700, fontSize:13.5}}>{inc.title}</div>
+                <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>{inc.id} · {inc.time}</div>
+              </div>
+              <Pill type={inc.severity==="Critical"||inc.severity==="High" ? "high" : inc.severity==="Medium"?"medium":"low"}>{inc.severity}</Pill>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SecurityEmergency({state}){
+  return (
+    <div>
+      <div className="topbar"><div><div className="eyebrow">Security Portal</div><h1>Emergency Response</h1></div></div>
+      <div className="card">
+        <h3>Active Emergency Alerts</h3>
+        {state.sosAlerts.filter(a=>a.status!=="Resolved").length===0 && <div className="empty"><div className="e-icon">✅</div>No active emergencies.</div>}
+        {state.sosAlerts.filter(a=>a.status!=="Resolved").map(a=>(
+          <div className="list-row" key={a.id}>
+            <div>
+              <div style={{fontWeight:700, fontSize:13.5}}>{a.id} — {a.student}, Room {a.room}</div>
+              <div style={{fontSize:11.5, color:"var(--muted)", marginTop:3}}>Triggered {a.time} · Dispatch nearest guard immediately</div>
+            </div>
+            <Pill type={a.status==="Acknowledged"?"ack":"high"}>{a.status}</Pill>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================ ADMIN PORTAL ============================ */
+
+function AdminPortal({state, addToast}){
+  const [tab, setTab] = useState("dashboard");
+  const navItems = [
+    {id:"dashboard", icon:"🏠", label:"Dashboard"},
+    {id:"students", icon:"🎓", label:"Student Management"},
+    {id:"fees", icon:"💰", label:"Fee Analytics"},
+    {id:"reports", icon:"📑", label:"Reports"},
+  ];
+
+  const totalRooms = ROOMS.length;
+  const occupiedEstimate = Math.round(totalRooms * 0.92);
+  const categories = {};
+  state.complaints.forEach(c=>{ categories[c.category] = (categories[c.category]||0)+1; });
+  const maxCat = Math.max(...Object.values(categories), 1);
+  const colors = ["var(--indigo)","var(--teal)","var(--amber)","var(--rose)","#8893ab","#5b6cf0"];
+
+  return (
+    <Shell role="admin" tab={tab} setTab={setTab} navItems={navItems} userLabel="Dr. Sharma" userSub="Hostel Management" avatarColor="var(--ink)" initials="PS">
+      {tab==="dashboard" && (
+        <div>
+          <div className="topbar"><div><div className="eyebrow">Admin Portal</div><h1>Hostel-Wide Analytics</h1></div></div>
+          <div className="grid grid-4" style={{marginBottom:18}}>
+            <div className="card"><h3>Total Rooms</h3><div className="stat">{totalRooms}</div><div className="stat-label">Across 4 floors, Block C</div></div>
+            <div className="card"><h3>Occupancy</h3><div className="stat">92%</div><div className="stat-label trend-up">{occupiedEstimate}/{totalRooms} rooms occupied</div></div>
+            <div className="card"><h3>Fee Collection</h3><div className="stat">81%</div><div className="stat-label">₹38.9L of ₹48L collected</div></div>
+            <div className="card"><h3>Total Complaints (30d)</h3><div className="stat">{state.complaints.length}</div><div className="stat-label">{state.complaints.filter(c=>c.status==="Resolved").length} resolved</div></div>
+          </div>
+          <div className="grid grid-2">
+            <div className="card">
+              <h3>Hostel Heat Map — All Blocks</h3>
+              <HeatMap issues={state.issues} />
+            </div>
+            <div className="card">
+              <h3>Complaint Distribution</h3>
+              {Object.entries(categories).map(([cat,count],i)=>(
+                <div className="bar-row" key={cat}>
+                  <span className="bar-label">{cat}</span>
+                  <div className="bar-track"><div className="bar-fill" style={{width:`${(count/maxCat)*100}%`, background:colors[i%colors.length]}}></div></div>
+                  <span className="bar-val">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab==="students" && (
+        <div>
+          <div className="topbar"><div><div className="eyebrow">Admin Portal</div><h1>Student Management</h1></div></div>
+          <div className="card">
+            <div className="scroll-x">
+              <div className="list-row" style={{fontWeight:800, fontSize:11, textTransform:"uppercase", color:"var(--muted)", letterSpacing:1}}>
+                <div style={{width:120}}>ID</div><div style={{flex:1}}>Name</div><div style={{width:90}}>Room</div><div style={{width:120}}>Fee Status</div>
+              </div>
+              {[
+                {id:"STU-2231", name:"Aarav Mehta", room:"203", fee:"₹18,000 due"},
+                {id:"STU-2188", name:"Priya Nair", room:"305", fee:"Paid"},
+                {id:"STU-2099", name:"Rohan Das", room:"112", fee:"Paid"},
+                {id:"STU-2304", name:"Sneha Iyer", room:"401", fee:"₹6,000 due"},
+                {id:"STU-2147", name:"Kabir Singh", room:"208", fee:"Paid"},
+              ].map(s=>(
+                <div className="list-row" key={s.id}>
+                  <div className="mono" style={{width:120, fontSize:12.5}}>{s.id}</div>
+                  <div style={{flex:1, fontWeight:600, fontSize:13.5}}>{s.name}</div>
+                  <div style={{width:90, fontSize:13}}>{s.room}</div>
+                  <div style={{width:120}}><Pill type={s.fee==="Paid"?"resolved":"medium"}>{s.fee}</Pill></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab==="fees" && (
+        <div>
+          <div className="topbar"><div><div className="eyebrow">Admin Portal</div><h1>Fee Analytics</h1></div></div>
+          <div className="grid grid-2">
+            <div className="card">
+              <h3>Collection Progress</h3>
+              <div className="bar-row"><span className="bar-label">Hostel Fee</span><div className="bar-track"><div className="bar-fill" style={{width:"85%", background:"var(--teal)"}}></div></div><span className="bar-val">85%</span></div>
+              <div className="bar-row"><span className="bar-label">Mess Fee</span><div className="bar-track"><div className="bar-fill" style={{width:"92%", background:"var(--indigo)"}}></div></div><span className="bar-val">92%</span></div>
+              <div className="bar-row"><span className="bar-label">Electricity</span><div className="bar-track"><div className="bar-fill" style={{width:"68%", background:"var(--amber)"}}></div></div><span className="bar-val">68%</span></div>
+            </div>
+            <div className="card">
+              <h3>AI Insight</h3>
+              <div className="ai-result">
+                <div className="ai-head"><span className="ai-dot"></span> Fee Risk Prediction</div>
+                <p style={{fontSize:13, lineHeight:1.7}}>14 students have pending electricity dues past the grace period. Sending automated reminders now is projected to recover ~₹2.1L before the term-end deadline.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab==="reports" && (
+        <div>
+          <div className="topbar"><div><div className="eyebrow">Admin Portal</div><h1>Reports</h1></div></div>
+          <div className="card">
+            <h3>Generate Report</h3>
+            <div className="grid grid-3">
+              {["Monthly Occupancy Report","Complaint Resolution Report","Fee Collection Report","Incident & Safety Report","Visitor Activity Report","Mess Feedback Summary"].map(r=>(
+                <div className="card" key={r} style={{padding:16}}>
+                  <div style={{fontWeight:700, fontSize:13.5, marginBottom:10}}>{r}</div>
+                  <button className="btn btn-ghost" onClick={()=>addToast(`${r} generated (demo)`, "var(--indigo)")}>Generate PDF</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </Shell>
+  );
+}
+
+/* ============================ SHELL / LAYOUT ============================ */
+
+const ROLE_META = {
+  student: {name:"Student Portal", mark:"SH"},
+  parent: {name:"Parent Portal", mark:"SH"},
+  warden: {name:"Warden Portal", mark:"SH"},
+  security: {name:"Security Portal", mark:"SH"},
+  admin: {name:"Admin Portal", mark:"SH"},
+};
+
+function Shell({role, tab, setTab, navItems, children, userLabel, userSub, avatarColor, initials, onLogout}){
+  return (
+    <div className="shell">
+      <div className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">SH</div>
+          <div>
+            <div className="brand-name">SmartHostel AI</div>
+            <div className="brand-sub">{ROLE_META[role].name}</div>
+          </div>
+        </div>
+        {navItems.map(n=>(
+          <div className={`nav-item ${tab===n.id?"active":""}`} key={n.id} onClick={()=>setTab(n.id)}>
+            <span className="nav-icon">{n.icon}</span>{n.label}
+          </div>
+        ))}
+        <div className="sidebar-footer">
+          <div className="user-pill">
+            <div className="avatar" style={{background:avatarColor}}>{initials}</div>
+            <div>
+              <div style={{fontWeight:700, color:"#fff"}}>{userLabel}</div>
+              <div style={{fontSize:11}}>{userSub}</div>
+            </div>
+          </div>
+          <a className="logout" onClick={onLogout}>← Switch role / Logout</a>
+        </div>
+      </div>
+      <div className="main">{children}</div>
+    </div>
+  );
+}
+
+/* ============================ ROOT APP ============================ */
+
+function App(){
+  const [role, setRole] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const [state, setState] = useState({
+    complaints: INITIAL_COMPLAINTS,
+    issues: seedIssues,
+    sosAlerts: [],
+    roomTransfers: [],
+    leaveRequests: [],
+    visitorApprovals: [],
+    visitorLog: VISITOR_LOG,
+    incidents: [
+      { id:"INC-301", title:"Loud altercation reported in Block C corridor, 4th floor", severity:"High", status:"Reported", time:"6h ago" }
+    ],
+  });
+
+  function addToast(msg, color){
+    const id = Date.now() + Math.random();
+    setToasts(t=>[...t, {id, msg, color}]);
+    setTimeout(()=> setToasts(t=>t.filter(x=>x.id!==id)), 4000);
+  }
+
+  function handleLogout(){
+    setRole(null);
+  }
+
+  // attach logout via context-ish prop drilling: wrap setRole
+  const portals = {
+    student: <StudentPortal state={state} setState={setState} addToast={addToast} />,
+    parent: <ParentPortal state={state} addToast={addToast} />,
+    warden: <WardenPortal state={state} setState={setState} addToast={addToast} />,
+    security: <SecurityPortal state={state} setState={setState} addToast={addToast} />,
+    admin: <AdminPortal state={state} addToast={addToast} />,
+  };
+
+  if(!role) return <Login onLogin={setRole} />;
+
+  return (
+    <React.Fragment>
+      <Toasts toasts={toasts} />
+      <LogoutInjector onLogout={handleLogout}>
+        {portals[role]}
+      </LogoutInjector>
+    </React.Fragment>
+  );
+}
+
+// Helper to inject onLogout into the Shell via cloning the tree's nav-item area —
+// simplified: we just render a floating switch-role button instead.
+function LogoutInjector({children, onLogout}){
+  return (
+    <div style={{position:"relative"}}>
+      {children}
+      <button
+        onClick={onLogout}
+        style={{
+          position:"fixed", bottom:18, left:18, zIndex:40,
+          background:"#10151f", color:"#fff", border:"none", borderRadius:10,
+          padding:"9px 16px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+          boxShadow:"0 8px 20px rgba(0,0,0,0.25)"
+        }}
+      >← Switch Role</button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
